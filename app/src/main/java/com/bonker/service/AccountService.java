@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.bonker.exception.AccountNotFoundException;
 import com.bonker.exception.InsufficientFundsException;
 import com.bonker.model.Account;
 import com.bonker.model.Card;
@@ -100,6 +101,9 @@ public class AccountService {
 
     public void exchangeCurrency(String iban, Currency newCurrency, BigDecimal exchangeRate) {
         Account account = accounts.get(iban);
+        if (account == null) {
+            throw new AccountNotFoundException("Account not found: " + iban);
+        }
         account.setCurrency(newCurrency);
         BigDecimal newBalance = account.getBalance().multiply(exchangeRate);
         account.setBalance(newBalance);
