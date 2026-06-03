@@ -34,7 +34,7 @@ public abstract class Account {
 
     public Account(String iban, Currency currency, BigDecimal balance) {
         this.iban = iban;
-        this.balance = new BigDecimal(0);
+        this.balance = balance;
         this.currency = currency;
         this.transactions = new ArrayList<>();
         this.cards = new ArrayList<>();

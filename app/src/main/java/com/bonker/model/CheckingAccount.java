@@ -6,11 +6,11 @@ public class CheckingAccount extends Account {
     protected BigDecimal interestRate;
 
     public CheckingAccount(String iban, Currency currency, BigDecimal balance) {
-        super(iban, currency);
+        super(iban, currency, balance);
     }
 
     public CheckingAccount(String iban, Currency currency, double balance) {
-        super(iban, currency);
+        super(iban, currency, balance);
     }
 
     @Override
