@@ -3,8 +3,6 @@ package com.bonker.model;
 import java.math.BigDecimal;
 
 public class FixedTermSavingsAccount extends Account {
-    protected BigDecimal interestRate;
-
     public FixedTermSavingsAccount(String iban, Currency currency, BigDecimal balance) {
         super(iban, currency, balance);
     }
