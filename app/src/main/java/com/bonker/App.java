@@ -1,17 +1,17 @@
 package com.bonker;
-import com.bonker.models.CheckingAccount;
-import com.bonker.models.SavingsAccount;
-import com.bonker.models.Client;
-import com.bonker.models.Currency;
+
+import com.bonker.model.CheckingAccount;
+import com.bonker.model.SavingsAccount;
+import com.bonker.model.Client;
+import com.bonker.model.Currency;
+import com.bonker.exception.InsufficientFundsException;
+import com.bonker.model.Account;
+import com.bonker.model.Card;
+import com.bonker.service.AccountService;
+import com.bonker.service.ClientService;
 
 import java.math.BigDecimal;
 import java.util.List;
-
-import com.bonker.exceptions.InsufficientFundsException;
-import com.bonker.models.Account;
-import com.bonker.models.Card;
-import com.bonker.services.AccountService;
-import com.bonker.services.ClientService;
 
 public class App {
     public static void main(String[] args) {
