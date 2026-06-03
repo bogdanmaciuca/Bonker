@@ -12,6 +12,7 @@ public class Client {
     public Client(String firstName, String lastName, String idNumber) {
         this.firstName = firstName;
         this.lastName = lastName;
+        this.idNumber = idNumber;
         this.accounts = new ArrayList<>();
     }
 
