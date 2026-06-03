@@ -99,7 +99,6 @@ public class AccountService {
     }
 
     public void exchangeCurrency(String iban, Currency newCurrency, BigDecimal exchangeRate) {
-        System.out.println("EXCHANGINGGGGGG");
         Account account = accounts.get(iban);
         account.setCurrency(newCurrency);
         BigDecimal newBalance = account.getBalance().multiply(exchangeRate);
