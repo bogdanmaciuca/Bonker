@@ -10,6 +10,7 @@ import com.bonker.exception.InsufficientFundsException;
 import com.bonker.model.Account;
 import com.bonker.model.Card;
 import com.bonker.service.AccountService;
+import com.bonker.service.AuditService;
 import com.bonker.service.ClientService;
 
 import java.awt.BorderLayout;
@@ -28,6 +29,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
 public class App {
+    private static final AuditService auditService = AuditService.getInstance();
     private static final AccountService accountService = AccountService.getInstance();
     private static final ClientService clientService = ClientService.getInstance();
     private static final JTextArea output = new JTextArea(20, 60);
@@ -68,6 +70,8 @@ public class App {
     }
 
     private static void registerClient() {
+        auditService.log("Register client");
+
         String fn = input("First name:");
         String ln = input("Last name:");
         String id = input("ID number: ");
@@ -75,10 +79,13 @@ public class App {
 
         Client c = new Client(fn, ln, id);
         clientService.registerClient(c);
+
         log("Registered: " + fn + " " + ln + " (" + id + ")");
     }
 
     private static void openAccount() {
+        auditService.log("Open account");
+
         String iban = input("IBAN:");
         String currencyCode = input("Currency code (RON/EUR):");
         String type = input("Account type (checking/savings/fixed):");
@@ -105,6 +112,8 @@ public class App {
     }
 
     private static void deposit() {
+        auditService.log("Deposit");
+
         String iban   = input("IBAN:");
         String amount = input("Amount:");
         if (anyNull(iban, amount)) return;
@@ -114,6 +123,8 @@ public class App {
     }
 
     private static void withdraw() {
+        auditService.log("Withdraw");
+
         String iban   = input("IBAN:");
         String amount = input("Amount:");
         if (anyNull(iban, amount)) return;
@@ -127,6 +138,8 @@ public class App {
     }
 
     private static void transfer() {
+        auditService.log("Transfer");
+
         String src   = input("Source IBAN:");
         String dst   = input("Destination IBAN:");
         String amount = input("Amount:");
@@ -141,6 +154,8 @@ public class App {
     }
 
     private static void exchangeCurrency() {
+        auditService.log("Exchange currency");
+
         String iban  = input("IBAN:");
         String newCur = input("New currency (EUR/USD):");
         String rate   = input("Exchange rate:");
@@ -151,6 +166,8 @@ public class App {
     }
 
     private static void transactionHistory() {
+        auditService.log("Transaction History");
+
         String iban = input("IBAN:");
         if (iban == null) return;
 
@@ -165,11 +182,15 @@ public class App {
     }
 
     private static void applyInterest() {
+        auditService.log("Apply interest");
+
         accountService.applyInterest();
         log("Interest applied to all savings accounts.");
     }
 
     private static void closeAccount() {
+        auditService.log("Close account");
+
         String iban = input("IBAN to close:");
         if (iban == null) return;
 
@@ -182,6 +203,8 @@ public class App {
     }
 
     private static void totalBalance() {
+        auditService.log("Total balance");
+
         String id = input("Client ID number:");
         if (id == null) return;
 
@@ -189,8 +212,7 @@ public class App {
             client -> {
                 BigDecimal total = accountService.calculateTotalBalance(client.getAccounts());
                 log("Total balance for " + client.getFirstName() + " " + client.getLastName() + ": " + total);
-            },
-        () -> log("ERROR: Client not found: " + id)
+            }, () -> log("ERROR: Client not found: " + id)
         );
     }
 
