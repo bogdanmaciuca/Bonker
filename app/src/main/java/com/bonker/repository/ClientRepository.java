@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.sql.SQLException;
 import java.sql.Connection;
-import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -49,8 +48,8 @@ public class ClientRepository implements Repository<Client, String> {
     public List<Client> findAll() {
         List<Client> list = new ArrayList<>();
         String sql = "SELECT * FROM client";
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) list.add(map(rs));
         }
         catch (SQLException e) {
@@ -81,6 +80,24 @@ public class ClientRepository implements Repository<Client, String> {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<String> findClientAccountCounts() {
+        List<String> result = new ArrayList<>();
+        String sql = "SELECT c.first_name, c.last_name, c.id_number, COUNT(a.iban) AS account_count "
+        + "FROM client c LEFT JOIN account a ON c.id_number = a.client_id "
+        + "GROUP BY c.id_number";
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                result.add(rs.getString("first_name") + " " + rs.getString("last_name")
+                    + " (" + rs.getString("id_number") + ") — "
+                    + rs.getInt("account_count") + " account(s)");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 
     private Client map(ResultSet rs) throws SQLException {

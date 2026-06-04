@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Optional;
 import java.util.List;
 import java.util.ArrayList;
@@ -47,8 +46,8 @@ public class CardRepository implements Repository<Card, String> {
     public List<Card> findAll() {
         List<Card> list = new ArrayList<>();
         String sql = "SELECT * FROM card";
-        try (Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) list.add(map(rs));
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -79,6 +78,23 @@ public class CardRepository implements Repository<Card, String> {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<String> findCardAccountDetails() {
+        List<String> result = new ArrayList<>();
+        String sql = "SELECT c.number, c.exp_date, a.iban, a.balance, a.currency "
+        + "FROM card c JOIN account a ON c.account_iban = a.iban";
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                result.add("Card " + rs.getString("number") + " (exp " + rs.getString("exp_date") + ")"
+                    + " -> " + rs.getString("iban") + " ["
+                    + rs.getDouble("balance") + " " + rs.getString("currency") + "]");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 
     private Card map(ResultSet rs) throws SQLException {

@@ -43,8 +43,8 @@ public class TransactionRepository implements Repository<Transaction, Long> {
     public List<Transaction> findAll() {
         List<Transaction> list = new ArrayList<>();
         String sql = "SELECT * FROM transaction";
-        try (Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) list.add(map(rs));
         } catch (SQLException e) {
             throw new RuntimeException(e);

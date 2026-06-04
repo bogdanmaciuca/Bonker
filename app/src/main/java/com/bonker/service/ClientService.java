@@ -1,14 +1,13 @@
 package com.bonker.service;
 
 import com.bonker.model.Client;
-import java.util.HashSet;
+import com.bonker.repository.ClientRepository;
 import java.util.List;
-import java.util.Set;
 import java.util.Optional;
 
 public class ClientService {
     private static ClientService instance;
-    private final Set<Client> clients = new HashSet<>();
+    private final ClientRepository clientRepository = new ClientRepository();
 
     private ClientService() {}
 
@@ -20,24 +19,24 @@ public class ClientService {
     }
 
     public void registerClient(Client client) {
-        clients.add(client);
+        clientRepository.save(client);
     }
 
     public void removeClient(String idNumber) {
-        clients.removeIf(c -> c.getIdNumber().equals(idNumber));
+        clientRepository.delete(idNumber);
     }
 
     public List<Client> findByName(String firstName, String lastName) {
-        return clients.stream().filter(c -> c.getFirstName().equals(firstName) && c.getLastName().equals(lastName)).toList();
+        return clientRepository.findAll().stream().filter(
+            c -> c.getFirstName().equals(firstName) && c.getLastName().equals(lastName)
+        ).toList();
     }
 
     public Optional<Client> findByIdentityNumber(String id) {
-        return clients.stream()
-            .filter(c -> c.getIdNumber().equals(id))
-            .findFirst();
+        return clientRepository.findById(id);
     }
 
-    public Set<Client> getAllClients() {
-        return clients;
+    public List<Client> getAllClients() {
+        return clientRepository.findAll();
     }
 }
