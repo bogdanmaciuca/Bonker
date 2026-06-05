@@ -12,12 +12,14 @@ import com.bonker.model.Card;
 import com.bonker.service.AccountService;
 import com.bonker.service.AuditService;
 import com.bonker.service.ClientService;
+import com.bonker.util.Validation;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -72,29 +74,29 @@ public class App {
     private static void registerClient() {
         auditService.log("Register client");
 
-        String fn = input("First name:");
+        String fn = inputValid("First name:", "cannot be empty", Validation::isNonEmpty);
         if (fn == null) return;
-        String ln = input("Last name:");
+        String ln = inputValid("Last name:", "cannot be empty", Validation::isNonEmpty);
         if (ln == null) return;
-        String id = input("ID number: ");
+        String id = inputValid("ID number (13 digits):", "must be 13 digits", Validation::isValidCnp);
         if (id == null) return;
 
         Client c = new Client(fn, ln, id);
         clientService.registerClient(c);
-
         log("Registered: " + fn + " " + ln + " (" + id + ")");
     }
 
     private static void openAccount() {
         auditService.log("Open account");
 
-        String iban = input("IBAN:");
+        String iban = inputValid("IBAN:", "must start with RO + 22 chars", Validation::isValidIban);
         if (iban == null) return;
-        String currencyCode = input("Currency code (RON/EUR):");
+        String currencyCode = inputValid("Currency code (RON/EUR):", "3 letters",
+            s -> Validation.isNonEmpty(s) && Validation.isValidCurrencyCode(s.toUpperCase()));
         if (currencyCode == null) return;
-        String type = input("Account type (checking/savings/fixed):");
+        String type = inputValid("Account type (checking/savings/fixed):", "checking/savings/fixed", Validation::isValidAccountType);
         if (type == null) return;
-        String balanceStr = input("Initial balance:");
+        String balanceStr = inputValid("Initial balance:", "must be positive number", Validation::isPositiveBigDecimal);
         if (balanceStr == null) return;
 
         Currency currency = new Currency(currencyCode.toUpperCase(), currencyCode.toUpperCase());
@@ -103,7 +105,7 @@ public class App {
         Account account;
         switch (type.toLowerCase()) {
             case "savings" -> {
-                String rate = input("Interest rate:");
+                String rate = inputValid("Interest rate (0-1):", "must be between 0 and 1", Validation::isValidRate);
                 if (rate == null) return;
                 account = new SavingsAccount(iban, currency, new BigDecimal(rate), balance);
             }
@@ -118,9 +120,9 @@ public class App {
     private static void deposit() {
         auditService.log("Deposit");
 
-        String iban   = input("IBAN:");
+        String iban = inputValid("IBAN:", "must start with RO + 22 chars", Validation::isValidIban);
         if (iban == null) return;
-        String amount = input("Amount:");
+        String amount = inputValid("Amount:", "must be positive number", Validation::isPositiveBigDecimal);
         if (amount == null) return;
 
         accountService.deposit(iban, new BigDecimal(amount));
@@ -130,9 +132,9 @@ public class App {
     private static void withdraw() {
         auditService.log("Withdraw");
 
-        String iban   = input("IBAN:");
+        String iban = inputValid("IBAN:", "must start with RO + 22 chars", Validation::isValidIban);
         if (iban == null) return;
-        String amount = input("Amount:");
+        String amount = inputValid("Amount:", "must be positive number", Validation::isPositiveBigDecimal);
         if (amount == null) return;
 
         try {
@@ -146,11 +148,11 @@ public class App {
     private static void transfer() {
         auditService.log("Transfer");
 
-        String src   = input("Source IBAN:");
+        String src = inputValid("Source IBAN:", "must start with RO + 22 chars", Validation::isValidIban);
         if (src == null) return;
-        String dst   = input("Destination IBAN:");
+        String dst = inputValid("Destination IBAN:", "must start with RO + 22 chars", Validation::isValidIban);
         if (dst == null) return;
-        String amount = input("Amount:");
+        String amount = inputValid("Amount:", "must be positive number", Validation::isPositiveBigDecimal);
         if (amount == null) return;
 
         try {
@@ -164,11 +166,12 @@ public class App {
     private static void exchangeCurrency() {
         auditService.log("Exchange currency");
 
-        String iban  = input("IBAN:");
+        String iban = inputValid("IBAN:", "must start with RO + 22 chars", Validation::isValidIban);
         if (iban == null) return;
-        String newCur = input("New currency (EUR/USD):");
+        String newCur = inputValid("New currency (EUR/USD):", "3 letters",
+            s -> Validation.isNonEmpty(s) && Validation.isValidCurrencyCode(s.toUpperCase()));
         if (newCur == null) return;
-        String rate   = input("Exchange rate:");
+        String rate = inputValid("Exchange rate:", "must be positive number", Validation::isPositiveBigDecimal);
         if (rate == null) return;
 
         accountService.exchangeCurrency(iban, new Currency(newCur.toUpperCase(), newCur.toUpperCase()), new BigDecimal(rate));
@@ -178,7 +181,7 @@ public class App {
     private static void transactionHistory() {
         auditService.log("Transaction History");
 
-        String iban = input("IBAN:");
+        String iban = inputValid("IBAN:", "must start with RO + 22 chars", Validation::isValidIban);
         if (iban == null) return;
 
         Account acc = accountService.getAccount(iban);
@@ -193,7 +196,6 @@ public class App {
 
     private static void applyInterest() {
         auditService.log("Apply interest");
-
         accountService.applyInterest();
         log("Interest applied to all savings accounts.");
     }
@@ -201,7 +203,7 @@ public class App {
     private static void closeAccount() {
         auditService.log("Close account");
 
-        String iban = input("IBAN to close:");
+        String iban = inputValid("IBAN to close:", "must start with RO + 22 chars", Validation::isValidIban);
         if (iban == null) return;
 
         try {
@@ -215,7 +217,7 @@ public class App {
     private static void totalBalance() {
         auditService.log("Total balance");
 
-        String id = input("Client ID number:");
+        String id = inputValid("Client ID number (13 digits):", "must be 13 digits", Validation::isValidCnp);
         if (id == null) return;
 
         clientService.findByIdentityNumber(id).ifPresentOrElse(
@@ -234,6 +236,15 @@ public class App {
 
     private static String input(String message) {
         return JOptionPane.showInputDialog(output.getTopLevelAncestor(), message);
+    }
+
+    private static String inputValid(String msg, String err, Predicate<String> validator) {
+        while (true) {
+            String s = JOptionPane.showInputDialog(output.getTopLevelAncestor(), msg);
+            if (s == null) return null;
+            if (validator.test(s)) return s;
+            log("Invalid: " + err);
+        }
     }
 
     private static void log(String message) {
