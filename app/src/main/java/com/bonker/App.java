@@ -73,9 +73,11 @@ public class App {
         auditService.log("Register client");
 
         String fn = input("First name:");
+        if (fn == null) return;
         String ln = input("Last name:");
+        if (ln == null) return;
         String id = input("ID number: ");
-        if (fn == null || ln == null || id == null) return;
+        if (id == null) return;
 
         Client c = new Client(fn, ln, id);
         clientService.registerClient(c);
@@ -87,11 +89,13 @@ public class App {
         auditService.log("Open account");
 
         String iban = input("IBAN:");
+        if (iban == null) return;
         String currencyCode = input("Currency code (RON/EUR):");
+        if (currencyCode == null) return;
         String type = input("Account type (checking/savings/fixed):");
+        if (type == null) return;
         String balanceStr = input("Initial balance:");
-
-        if (anyNull(iban, currencyCode, type, balanceStr)) return;
+        if (balanceStr == null) return;
 
         Currency currency = new Currency(currencyCode.toUpperCase(), currencyCode.toUpperCase());
         BigDecimal balance = new BigDecimal(balanceStr);
@@ -115,8 +119,9 @@ public class App {
         auditService.log("Deposit");
 
         String iban   = input("IBAN:");
+        if (iban == null) return;
         String amount = input("Amount:");
-        if (anyNull(iban, amount)) return;
+        if (amount == null) return;
 
         accountService.deposit(iban, new BigDecimal(amount));
         log("Deposited " + amount + " into " + iban);
@@ -126,8 +131,9 @@ public class App {
         auditService.log("Withdraw");
 
         String iban   = input("IBAN:");
+        if (iban == null) return;
         String amount = input("Amount:");
-        if (anyNull(iban, amount)) return;
+        if (amount == null) return;
 
         try {
             accountService.withdraw(iban, new BigDecimal(amount));
@@ -141,9 +147,11 @@ public class App {
         auditService.log("Transfer");
 
         String src   = input("Source IBAN:");
+        if (src == null) return;
         String dst   = input("Destination IBAN:");
+        if (dst == null) return;
         String amount = input("Amount:");
-        if (anyNull(src, dst, amount)) return;
+        if (amount == null) return;
 
         try {
             accountService.transfer(src, dst, new BigDecimal(amount));
@@ -157,9 +165,11 @@ public class App {
         auditService.log("Exchange currency");
 
         String iban  = input("IBAN:");
+        if (iban == null) return;
         String newCur = input("New currency (EUR/USD):");
+        if (newCur == null) return;
         String rate   = input("Exchange rate:");
-        if (anyNull(iban, newCur, rate)) return;
+        if (rate == null) return;
 
         accountService.exchangeCurrency(iban, new Currency(newCur.toUpperCase(), newCur.toUpperCase()), new BigDecimal(rate));
         log("Exchanged currency on " + iban + " to " + newCur + " at rate " + rate);
@@ -230,11 +240,5 @@ public class App {
         output.append(message + "\n");
     }
 
-    private static boolean anyNull(String... args) {
-        for (String s : args) {
-            if (s == null) return true;
-        }
-        return false;
-    }
 }
 
