@@ -255,7 +255,7 @@ public class App {
 
         clientService.findByIdentityNumber(id).ifPresentOrElse(
             client -> {
-                BigDecimal total = accountService.calculateTotalBalance(client.getAccounts());
+                BigDecimal total = accountService.calculateTotalBalance(accountService.getAccountsByClientId(id));
                 log("Total balance for " + client.getFirstName() + " " + client.getLastName() + ": " + total);
             }, () -> log("ERROR: Client not found: " + id)
         );
