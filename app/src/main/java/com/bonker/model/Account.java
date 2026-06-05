@@ -9,6 +9,7 @@ public abstract class Account {
     protected String            iban;
     protected Currency          currency;
     protected BigDecimal        balance;
+    protected String            clientId;
     protected List<Transaction> transactions;
     protected List<Card>        cards;
 
@@ -17,12 +18,14 @@ public abstract class Account {
     public List<Transaction> getTransactions() { return transactions; }
     public Currency getCurrency() { return currency; }
     public List<Card> getCards() { return cards; }
+    public String getClientId() { return clientId; }
 
     public void setIban(String iban) { this.iban = iban; }
     public void setCurrency(Currency currency) { this.currency = currency; }
     public void setBalance(BigDecimal balance) { this.balance = balance; }
     public void setTransactions(List<Transaction> transactions) { this.transactions = transactions; }
     public void setCards(List<Card> cards) { this.cards = cards; }
+    public void setClientId(String clientId) { this.clientId = clientId; }
 
     public Account(String iban, Currency currency) {
         this.iban = iban;

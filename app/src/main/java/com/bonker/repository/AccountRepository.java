@@ -24,7 +24,7 @@ public class AccountRepository implements Repository<Account, String> {
         String sql = "INSERT INTO account (iban, client_id, currency, balance, type, interest) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, entity.getIban());
-            ps.setString(2, null);
+            ps.setString(2, entity.getClientId());
             ps.setString(3, entity.getCurrency().code());
             ps.setDouble(4, entity.getBalance().doubleValue());
             ps.setString(5, entity.getType().name());
@@ -55,6 +55,19 @@ public class AccountRepository implements Repository<Account, String> {
         String sql = "SELECT * FROM account";
         try (PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) list.add(map(rs));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
+    public List<Account> findByClientId(String clientId) {
+        List<Account> list = new ArrayList<>();
+        String sql = "SELECT * FROM account WHERE client_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, clientId);
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) list.add(map(rs));
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -112,11 +125,13 @@ public class AccountRepository implements Repository<Account, String> {
         String iban = rs.getString("iban");
         String type = rs.getString("type");
 
-        return switch (type) {
+        Account acc = switch (type) {
             case "SAVINGS" -> new SavingsAccount(iban, currency, BigDecimal.valueOf(rs.getDouble("interest")), balance);
             case "FIXED_TERM_SAVINGS" -> new FixedTermSavingsAccount(iban, currency, balance);
             default -> new CheckingAccount(iban, currency, balance);
         };
+        acc.setClientId(rs.getString("client_id"));
+        return acc;
     }
 }
 

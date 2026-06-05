@@ -108,6 +108,10 @@ public class AccountService {
         }
     }
 
+    public List<Account> getAccountsByClientId(String clientId) {
+        return accountRepository.findByClientId(clientId);
+    }
+
     public Account getAccount(String iban) {
         var account = accountRepository.findById(iban);
         if (account.isEmpty()) {

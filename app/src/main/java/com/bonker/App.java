@@ -46,7 +46,9 @@ public class App {
 
         JPanel buttons = new JPanel(new GridLayout(0, 2, 5, 5));
         buttons.add(btn("Register Client",     App::registerClient));
+        buttons.add(btn("List All Clients",    App::listAllClients));
         buttons.add(btn("Open Account",        App::openAccount));
+        buttons.add(btn("Accounts by Client",  App::accountsByClient));
         buttons.add(btn("Deposit",             App::deposit));
         buttons.add(btn("Withdraw",            App::withdraw));
         buttons.add(btn("Transfer",            App::transfer));
@@ -89,6 +91,8 @@ public class App {
     private static void openAccount() {
         auditService.log("Open account");
 
+        String clientId = inputValid("Client ID (13 digits):", "must be 13 digits", Validation::isValidCnp);
+        if (clientId == null) return;
         String iban = inputValid("IBAN:", "must start with RO + 22 chars", Validation::isValidIban);
         if (iban == null) return;
         String currencyCode = inputValid("Currency code (RON/EUR):", "3 letters",
@@ -112,9 +116,9 @@ public class App {
             case "fixed"   -> account = new FixedTermSavingsAccount(iban, currency, balance);
             default        -> account = new CheckingAccount(iban, currency, balance);
         }
-
+        account.setClientId(clientId);
         accountService.addAccount(account);
-        log("Opened account " + iban + " (" + type + ", " + currencyCode + ")");
+        log("Opened account " + iban + " (" + type + ", " + currencyCode + ") for client " + clientId);
     }
 
     private static void deposit() {
@@ -192,6 +196,35 @@ public class App {
 
         log("--- Transaction history for " + iban + " ---");
         acc.getTransactions().forEach(t -> log("  " + t));
+    }
+
+    private static void listAllClients() {
+        auditService.log("List All Clients");
+        var clients = clientService.getAllClients();
+        if (clients.isEmpty()) {
+            log("No clients registered.");
+            return;
+        }
+        log("--- All Clients (" + clients.size() + ") ---");
+        for (Client c : clients) {
+            log("  " + c.getFirstName() + " " + c.getLastName() + " (" + c.getIdNumber() + ")");
+        }
+    }
+
+    private static void accountsByClient() {
+        auditService.log("Accounts by Client");
+        String id = inputValid("Client ID (13 digits):", "must be 13 digits", Validation::isValidCnp);
+        if (id == null) return;
+
+        var accounts = accountService.getAccountsByClientId(id);
+        if (accounts.isEmpty()) {
+            log("No accounts for client " + id);
+            return;
+        }
+        log("--- Accounts for " + id + " (" + accounts.size() + ") ---");
+        for (Account a : accounts) {
+            log("  " + a.getIban() + " | " + a.getType() + " | " + a.getBalance() + " " + a.getCurrency());
+        }
     }
 
     private static void applyInterest() {
