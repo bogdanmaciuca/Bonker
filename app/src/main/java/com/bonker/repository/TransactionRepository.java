@@ -13,7 +13,7 @@ public class TransactionRepository implements Repository<Transaction, Long> {
 
     @Override
     public void save(Transaction entity) {
-        String sql = "INSERT INTO transaction (account_iban, type, amount, currency, timestamp) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO \"transaction\" (account_iban, type, amount, currency, timestamp) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, null);
             ps.setString(2, entity.type().name());
@@ -28,7 +28,7 @@ public class TransactionRepository implements Repository<Transaction, Long> {
 
     @Override
     public Optional<Transaction> findById(Long id) {
-        String sql = "SELECT * FROM transaction WHERE id = ?";
+        String sql = "SELECT * FROM \"transaction\" WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
@@ -42,7 +42,7 @@ public class TransactionRepository implements Repository<Transaction, Long> {
     @Override
     public List<Transaction> findAll() {
         List<Transaction> list = new ArrayList<>();
-        String sql = "SELECT * FROM transaction";
+        String sql = "SELECT * FROM \"transaction\"";
         try (PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) list.add(map(rs));
@@ -59,7 +59,7 @@ public class TransactionRepository implements Repository<Transaction, Long> {
 
     @Override
     public void delete(Long id) {
-        String sql = "DELETE FROM transaction WHERE id = ?";
+        String sql = "DELETE FROM \"transaction\" WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ps.executeUpdate();

@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS transaction;
+DROP TABLE IF EXISTS "transaction";
 DROP TABLE IF EXISTS cards;
 DROP TABLE IF EXISTS accounts;
 DROP TABLE IF EXISTS clients;
@@ -27,7 +27,7 @@ CREATE TABLE card (
     FOREIGN KEY (account_iban) REFERENCES account(iban)
 );
 
-CREATE TABLE transaction (
+CREATE TABLE "transaction" (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     account_iban TEXT NOT NULL,
     type         TEXT NOT NULL,

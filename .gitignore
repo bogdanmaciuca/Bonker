@@ -9,3 +9,4 @@ app/bin/
 
 # Bonker
 audit.csv
+*.db
