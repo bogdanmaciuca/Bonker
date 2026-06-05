@@ -11,7 +11,7 @@ CREATE TABLE client (
 
 CREATE TABLE account (
     iban TEXT PRIMARY KEY,
-    client_id TEXT NOT NULL,
+    client_id TEXT,
     currency  TEXT NOT NULL,
     balance   REAL NOT NULL DEFAULT 0,
     type      TEXT NOT NULL,
