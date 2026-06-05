@@ -129,8 +129,12 @@ public class App {
         String amount = inputValid("Amount:", "must be positive number", Validation::isPositiveBigDecimal);
         if (amount == null) return;
 
-        accountService.deposit(iban, new BigDecimal(amount));
-        log("Deposited " + amount + " into " + iban);
+        try {
+            accountService.deposit(iban, new BigDecimal(amount));
+            log("Deposited " + amount + " into " + iban);
+        } catch (AccountNotFoundException e) {
+            log("ERROR: " + e.getMessage());
+        }
     }
 
     private static void withdraw() {
@@ -144,7 +148,7 @@ public class App {
         try {
             accountService.withdraw(iban, new BigDecimal(amount));
             log("Withdrew " + amount + " from " + iban);
-        } catch (InsufficientFundsException e) {
+        } catch (InsufficientFundsException | AccountNotFoundException e) {
             log("ERROR: " + e.getMessage());
         }
     }
@@ -178,8 +182,12 @@ public class App {
         String rate = inputValid("Exchange rate:", "must be positive number", Validation::isPositiveBigDecimal);
         if (rate == null) return;
 
-        accountService.exchangeCurrency(iban, new Currency(newCur.toUpperCase(), newCur.toUpperCase()), new BigDecimal(rate));
-        log("Exchanged currency on " + iban + " to " + newCur + " at rate " + rate);
+        try {
+            accountService.exchangeCurrency(iban, new Currency(newCur.toUpperCase(), newCur.toUpperCase()), new BigDecimal(rate));
+            log("Exchanged currency on " + iban + " to " + newCur + " at rate " + rate);
+        } catch (AccountNotFoundException e) {
+            log("ERROR: " + e.getMessage());
+        }
     }
 
     private static void transactionHistory() {
@@ -188,14 +196,13 @@ public class App {
         String iban = inputValid("IBAN:", "must start with RO + 22 chars", Validation::isValidIban);
         if (iban == null) return;
 
-        Account acc = accountService.getAccount(iban);
-        if (acc == null) {
-            log("ERROR: Account not found: " + iban);
-            return;
+        try {
+            Account acc = accountService.getAccount(iban);
+            log("--- Transaction history for " + iban + " ---");
+            acc.getTransactions().forEach(t -> log("  " + t));
+        } catch (AccountNotFoundException e) {
+            log("ERROR: " + e.getMessage());
         }
-
-        log("--- Transaction history for " + iban + " ---");
-        acc.getTransactions().forEach(t -> log("  " + t));
     }
 
     private static void listAllClients() {
@@ -229,8 +236,12 @@ public class App {
 
     private static void applyInterest() {
         auditService.log("Apply interest");
-        accountService.applyInterest();
-        log("Interest applied to all savings accounts.");
+        try {
+            accountService.applyInterest();
+            log("Interest applied to all savings accounts.");
+        } catch (AccountNotFoundException e) {
+            log("ERROR: " + e.getMessage());
+        }
     }
 
     private static void closeAccount() {
@@ -263,7 +274,13 @@ public class App {
 
     private static JButton btn(String label, Runnable action) {
         JButton b = new JButton(label);
-        b.addActionListener(e -> action.run());
+        b.addActionListener(e -> {
+            try {
+                action.run();
+            } catch (Exception ex) {
+                log("ERROR: " + ex.getMessage());
+            }
+        });
         return b;
     }
 
