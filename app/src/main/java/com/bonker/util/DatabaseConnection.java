@@ -37,6 +37,14 @@ public class DatabaseConnection {
     }
 
     private void runSchema() throws SQLException {
+        // skip if tables already exist (data persisted from previous run)
+        try (Statement check = connection.createStatement()) {
+            check.execute("SELECT 1 FROM client LIMIT 1");
+            return;
+        } catch (SQLException e) {
+            // tables don't exist — create them
+        }
+
         try (InputStream in = getClass().getClassLoader().getResourceAsStream("schema.sql");
              Statement stmt = connection.createStatement()) {
             String sql = new String(in.readAllBytes());
