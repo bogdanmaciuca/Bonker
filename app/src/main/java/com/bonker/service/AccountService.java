@@ -40,8 +40,10 @@ public class AccountService {
         if (account.isEmpty()) {
             throw new AccountNotFoundException("Could not find account: " + iban);
         }
-        account.get().setBalance(account.get().getBalance().add(amount));
-        account.get().getTransactions().add(new Transaction(TransactionType.DEPOSIT, amount, account.get().getCurrency()));
+        Account acc = account.get();
+        acc.setBalance(acc.getBalance().add(amount));
+        acc.getTransactions().add(new Transaction(TransactionType.DEPOSIT, amount, acc.getCurrency()));
+        accountRepository.update(acc);
     }
 
     public void withdraw(String iban, BigDecimal amount) throws InsufficientFundsException {
@@ -49,11 +51,13 @@ public class AccountService {
         if (account.isEmpty()) {
             throw new AccountNotFoundException("Could not find account: " + iban);
         }
-        if (account.get().getBalance().compareTo(amount) == -1) {
+        Account acc = account.get();
+        if (acc.getBalance().compareTo(amount) < 0) {
             throw new InsufficientFundsException("Not enough money in account: " + iban);
         }
-        account.get().setBalance(account.get().getBalance().subtract(amount));
-        account.get().getTransactions().add(new Transaction(TransactionType.WITHDRAWAL, amount, account.get().getCurrency()));
+        acc.setBalance(acc.getBalance().subtract(amount));
+        acc.getTransactions().add(new Transaction(TransactionType.WITHDRAWAL, amount, acc.getCurrency()));
+        accountRepository.update(acc);
     }
 
     public void transfer(String srcIban, String dstIban, BigDecimal amount) throws InsufficientFundsException {
@@ -139,10 +143,12 @@ public class AccountService {
         if (account.isEmpty()) {
             throw new AccountNotFoundException("Account not found: " + iban);
         }
-        account.get().setCurrency(newCurrency);
-        BigDecimal newBalance = account.get().getBalance().multiply(exchangeRate);
-        account.get().setBalance(newBalance);
-        account.get().getTransactions().add(new Transaction(TransactionType.EXCHANGE, newBalance, newCurrency));
+        Account acc = account.get();
+        acc.setCurrency(newCurrency);
+        BigDecimal newBalance = acc.getBalance().multiply(exchangeRate);
+        acc.setBalance(newBalance);
+        acc.getTransactions().add(new Transaction(TransactionType.EXCHANGE, newBalance, newCurrency));
+        accountRepository.update(acc);
     }
 
     public void attachCard(String iban, Card card) {
